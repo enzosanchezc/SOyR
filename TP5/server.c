@@ -77,6 +77,7 @@ int main(int argc, char const *argv[])
             int filesize = 0;
             while (filesize < expectedfilesize)
             {
+                // BUG: Si se pone un tamaño esperado mayor al real se cuelga
                 int n = recv(socket_con, buffer, 1024, 0);
                 fwrite(buffer, sizeof(char), n, fd);
                 filesize += n;
