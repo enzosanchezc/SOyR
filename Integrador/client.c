@@ -18,8 +18,8 @@ int main()
     struct sockaddr_in server;
     int addrlen = sizeof(server);
     int player_number, total_players;
-    char rx_buffer[1024] = {0};
-    char tx_buffer[1024] = {0};
+    char rx_buffer[1024];
+    char tx_buffer[1024];
 
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -48,7 +48,7 @@ int main()
         while (1)
         {
             printf("Ingrese el número de jugadores: ");
-            scanf("%s", &tx_buffer);
+            scanf("%s", tx_buffer);
             int players = atoi(tx_buffer);
             if (!(players == 2 || players == 3 || players == 4))
             {
@@ -70,7 +70,7 @@ int main()
     memset(rx_buffer, 0, 1024);
     recv(client_fd, rx_buffer, 1024, 0); // Decime tu nombre:
     printf("%s", rx_buffer);
-    scanf("%s", &tx_buffer);
+    scanf("%s", tx_buffer);
     send(client_fd, tx_buffer, 1024, 0);
 
     // Si es el ultimo jugador, recibe el mensaje que todos estan listos. Sino, que espera a los demas jugadores
@@ -104,12 +104,12 @@ int main()
         if (strcmp(token, "Levantás (L) o descartás (D)") == 0)
         {
             printf("%s", rx_buffer);
-            scanf("%s", &tx_buffer);
+            scanf("%s", tx_buffer);
             // corroborar que el jugador ingrese L o D
             while (strcmp(tx_buffer, "L") != 0 && strcmp(tx_buffer, "D") != 0)
             {
                 printf("No válido, ingrese L o D\n");
-                scanf("%s", &tx_buffer);
+                scanf("%s", tx_buffer);
             }
             turno = 1;
         }
@@ -124,7 +124,7 @@ int main()
             memset(rx_buffer, 0, 1024);
             recv(client_fd, rx_buffer, 1024, 0);
             printf("%s", rx_buffer);
-            scanf("%s", &tx_buffer);
+            scanf("%s", tx_buffer);
             // corroborar que la letra sea valida
             switch (strlen(rx_buffer))
             {
@@ -132,21 +132,21 @@ int main()
                 while (strcmp(rx_buffer, "a") != 0)
                 {
                     printf("No válido, ingrese una de las opciones indicadas\n");
-                    scanf("%s", &tx_buffer);
+                    scanf("%s", tx_buffer);
                 }
                 break;
             case 18:
                 while (strcmp(rx_buffer, "a") != 0 && strcmp(rx_buffer, "b") != 0)
                 {
                     printf("No válido, ingrese una de las opciones indicadas\n");
-                    scanf("%s", &tx_buffer);
+                    scanf("%s", tx_buffer);
                 }
                 break;
             case 21:
                 while (strcmp(rx_buffer, "a") != 0 && strcmp(rx_buffer, "b") != 0 && strcmp(rx_buffer, "c") != 0)
                 {
                     printf("No válido, ingrese una de las opciones indicadas\n");
-                    scanf("%s", &tx_buffer);
+                    scanf("%s", tx_buffer);
                 }
                 break;
             }
