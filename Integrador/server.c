@@ -316,7 +316,7 @@ int main()
                                             sprintf(rx_buffer, "%c ,", 'a' + i);
                                             strcat(tx_buffer, rx_buffer);
                                         }
-                                        tx_buffer[strlen(tx_buffer) - 1] = '\0';
+                                        tx_buffer[strlen(tx_buffer) - 2] = '\0';
                                         strcat(tx_buffer, ")\n");
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
