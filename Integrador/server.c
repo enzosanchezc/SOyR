@@ -312,7 +312,7 @@ int main()
                                         break;
                                     }
                                     recv(socket_con, rx_buffer, 1024, 0);
-                                    while (rx_buffer[0] != 'a' && rx_buffer[0] != 'b' && rx_buffer[0] != 'c')
+                                    while (rx_buffer[0] >= 'a' && rx_buffer[0] <= 'a' + contar_cartas(mano_temp) - 1)
                                     {
                                         send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
@@ -428,7 +428,7 @@ int main()
                                     recv(socket_con, rx_buffer, 1024, 0);
                                     break;
                                 }
-                                while (rx_buffer[0] != 'a' && rx_buffer[0] != 'b' && rx_buffer[0] != 'c')
+                                while (rx_buffer[0] >= 'a' && rx_buffer[0] <= 'a' + contar_cartas(jugadores[player_number].mano) - 1)
                                 {
                                     send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                     recv(socket_con, rx_buffer, 1024, 0);
