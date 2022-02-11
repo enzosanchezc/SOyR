@@ -314,7 +314,7 @@ int main()
                                             }
                                         }
                                     }
-                                    while (suma < 15)
+                                    while (suma < 15 && contar_cartas(mesa) > 0)
                                     {
                                         mano_a_string(mesa_temp, tx_buffer);
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
@@ -351,9 +351,16 @@ int main()
                                             }
                                         }
                                     }
-                                    if (suma > 15)
+                                    if (suma != 15)
                                     {
-                                        sprintf(tx_buffer, "La suma de las cartas es mayor a 15, comenzá denuevo\n");
+                                        if (suma > 15)
+                                        {
+                                            sprintf(tx_buffer, "La suma de las cartas es mayor a 15, comenzá denuevo\n");
+                                        }
+                                        else
+                                        {
+                                            sprintf(tx_buffer, "No hay más cartas sobre la mesa, comenzá denuevo\n");
+                                        }
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         restart = 1;
 
@@ -466,7 +473,6 @@ int main()
                         ganador = i;
                     }
                 }
-                
             }
             sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
