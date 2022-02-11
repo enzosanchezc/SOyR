@@ -625,6 +625,7 @@ void mano_a_string(int mano[40], char *string)
     char palo[7];
     int carta;
     int k = 'a';
+    strcpy(string, "Ninguna");
     for (int i = 0; i < 40; i++)
     {
         if (mano[i] == 1)
