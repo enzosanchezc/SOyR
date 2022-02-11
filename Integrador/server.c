@@ -26,6 +26,7 @@
 #define SHM_KEY1 0x1234
 #define SHM_KEY2 0x5678
 #define SHM_KEY3 0x5679
+#define SHM_KEY4 0x1235
 #define PORT 1234
 
 union semun
@@ -76,6 +77,10 @@ int main()
     int shmid3 = shmget(shmkey3, 40 * sizeof(int), 0666 | IPC_CREAT);
     int *mesa = shmat(shmid3, NULL, 0);
 
+    key_t shmkey4 = ftok("/bin/ls", SHM_KEY4);
+    int shmid4 = shmget(shmkey4, sizeof(int), 0666 | IPC_CREAT);
+    int *fin = shmat(shmid4, NULL, 0);
+
     key_t semkey = ftok("/bin/ls", SEM_KEY);
     union semun arg;
     struct sembuf operacion;
@@ -113,6 +118,10 @@ int main()
     {
         mazo[i] = 1;
         mesa[i] = 0;
+    }
+    for (int i = 11; i < 40; i++)
+    {
+        mazo[i] = 0;
     }
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
@@ -197,13 +206,13 @@ int main()
 
             // ARRANCA EL JUEGO
             int turno = 0;
-            int fin = 0;
+            *fin = 0;
             int vuelta = 0;
             int k = 'a';
             int suma = 0;
             int cartas_en_mazo_restantes;
 
-            while (fin == 0)
+            while (*fin == 0)
             {
                 sem_wait(1);
                 repartir3(mazo, jugadores[player_number].mano);
@@ -416,13 +425,13 @@ int main()
                                 }
                             }
 
+                            if (vuelta == 2 && player_number == 0 && contar_cartas(mazo) < total_players * 3)
+                            {
+                                *fin = 1;
+                            }
                             for (int i = 0; i < total_players - 1; i++)
                             {
                                 sem_post(0);
-                            }
-                            if (vuelta == 2 && player_number == 0 && contar_cartas(jugadores[player_number].mano) == 0)
-                            {
-                                fin = 1;
                             }
                         }
                         else
@@ -434,7 +443,6 @@ int main()
                             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                             sprintf(tx_buffer, "Espero la jugada de %s\n", jugadores[turno].nombre);
                             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                            cartas_en_mazo_restantes = contar_cartas(mazo);
                             sem_wait(0);
                         }
                         turno++;
@@ -443,11 +451,6 @@ int main()
                     vuelta++;
                 }
                 vuelta = 0;
-
-                if (cartas_en_mazo_restantes < (player_number * 3))
-                {
-                    fin = 1;
-                }
             }
             // verificar que jugador tiene mas escobas
             int mayor = 0;
@@ -459,6 +462,15 @@ int main()
                     mayor = jugadores[i].escobas;
                     ganador = i;
                 }
+                else if (jugadores[i].escobas == mayor)
+                {
+                    if (contar_cartas(jugadores[i].mazo) > contar_cartas(jugadores[ganador].mazo))
+                    {
+                        mayor = jugadores[i].escobas;
+                        ganador = i;
+                    }
+                }
+                
             }
             sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
