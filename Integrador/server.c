@@ -44,14 +44,13 @@ typedef struct jugador
     int id;
     char nombre[32];
     int escobas;
+    int puntos;
     int mazo[40];
     int mano[40];
 } jugador;
 
-void reiniciar_jugador(jugador jugador);
 void imprimir_mazo(int *mazo);
 void imprimir_mano(int mano[40]);
-void reiniciar_mazo(int *mazo);
 int repartir(int *mazo_fuente, int mazo_destino[40]);
 int repartir3(int *mazo_fuente, int mazo_destino[40]);
 void repartir_mesa(int *mazo_fuente, int *mazo_destino);
@@ -173,6 +172,7 @@ int main()
 
         jugadores[player_number].id = player_number;
         jugadores[player_number].escobas = 0;
+        jugadores[player_number].puntos = 0;
         for (int i = 0; i < 40; i++)
         {
             jugadores[player_number].mazo[i] = 0;
@@ -401,8 +401,11 @@ int main()
                                             mesa[i] = mesa_temp[i];
                                             jugadores[player_number].mazo[i] += mazo_temp[i];
                                         }
-                                        sprintf(tx_buffer, "Armaste una escoba, llevas %d escobas en total\n", ++jugadores[player_number].escobas);
-                                        send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                                        if (contar_cartas(mesa) == 0)
+                                        {
+                                            sprintf(tx_buffer, "Armaste una escoba, llevas %d escobas en total\n", ++jugadores[player_number].escobas);
+                                            send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                                        }
                                     }
                                 }
                             } while (restart);
@@ -468,7 +471,14 @@ int main()
                             sem_wait(0);
                             if (contar_cartas(mazo_temp) > 0)
                             {
-                                sprintf(tx_buffer, "%s armó el siguiente juego:\n", jugadores[turno].nombre);
+                                if (contar_cartas(mesa) > 0)
+                                {
+                                    sprintf(tx_buffer, "%s armó el siguiente juego:\n", jugadores[turno].nombre);
+                                }
+                                else
+                                {
+                                    sprintf(tx_buffer, "%s armó el siguiente juego y se llevó una escoba:\n", jugadores[turno].nombre);
+                                }
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 mano_a_string(mazo_temp, tx_buffer);
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
@@ -493,25 +503,66 @@ int main()
                 }
                 vuelta = 0;
             }
-            // verificar que jugador tiene mas escobas
-            int mayor = 0;
+
+            // Elección del ganador
             int ganador;
-            for (int i = 0; i < total_players; i++)
+            int valido;
+            // Las escobas valen un punto cada una.                 LISTO
+            // Si un jugador tiene todos los oros suma 2 puntos.    LISTO
+            // Quien tenga la mayoria de los oros suma 1 punto.
+            // Quien tenga el 7 de oro suma 1 punto.                LISTO
+            // Si alguien tiene todos los 7 gana 2 puntos.          LISTO
+            // Por tener la mayoria de los 7 se suma 1 punto.
+            // Por tener la mayoria de las cartas se gana 1 punto.
+
+            // Primero se calcula el puntaje de cada jugador
+
+            // Escobas
+            jugadores[player_number].puntos = jugadores[player_number].escobas;
+
+            // Todos los oros
+            valido = 1;
+            for (int j = 0; j < 10; j++)
             {
-                if (jugadores[i].escobas > mayor)
+                if (jugadores[player_number].mazo[j] == 0)
                 {
-                    mayor = jugadores[i].escobas;
-                    ganador = i;
-                }
-                else if (jugadores[i].escobas == mayor)
-                {
-                    if (contar_cartas(jugadores[i].mazo) > contar_cartas(jugadores[ganador].mazo))
-                    {
-                        mayor = jugadores[i].escobas;
-                        ganador = i;
-                    }
+                    valido = 0;
                 }
             }
+            if (valido)
+            {
+                jugadores[player_number].puntos = jugadores[player_number].puntos + 2;
+            }
+
+            // 7 de oros
+            if (jugadores[player_number].mazo[6] == 1)
+            {
+                jugadores[player_number].puntos = jugadores[player_number].puntos + 1;
+            }
+
+            // Todos los 7s
+            valido = 1;
+            for (int j = 6; j < 37; j = j + 10)
+            {
+                if (jugadores[player_number].mazo[j] == 0)
+                {
+                    valido = 0;
+                }
+            }
+            if (valido)
+            {
+                jugadores[player_number].puntos = jugadores[player_number].puntos + 2;
+            }
+
+            ganador = 0;
+            for (int i = 1; i < total_players; i++)
+            {
+                if (jugadores[i].puntos > jugadores[ganador].puntos)
+                {
+                    ganador = i;
+                }
+            }
+
             sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
             if (player_number == 0)
@@ -547,6 +598,64 @@ int main()
     semctl(semid, 0, IPC_RMID, arg);
 
     return 0;
+}
+
+void imprimir_mazo(int *mazo)
+{
+    printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
+    printf("Oro:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mazo[j]);
+    }
+    printf("\n");
+    printf("Copa:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mazo[10 + j]);
+    }
+    printf("\n");
+    printf("Espada:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mazo[20 + j]);
+    }
+    printf("\n");
+    printf("Basto:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mazo[30 + j]);
+    }
+    printf("\n");
+}
+
+void imprimir_mano(int mano[40])
+{
+    printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
+    printf("Oro:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mano[j]);
+    }
+    printf("\n");
+    printf("Copa:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mano[10 + j]);
+    }
+    printf("\n");
+    printf("Espada:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mano[20 + j]);
+    }
+    printf("\n");
+    printf("Basto:\t");
+    for (int j = 0; j < 10; j++)
+    {
+        printf("%d ", mano[30 + j]);
+    }
+    printf("\n");
 }
 
 int repartir(int *mazo_fuente, int mazo_destino[40])
@@ -609,64 +718,6 @@ int contar_cartas(int *mazo)
         }
     }
     return cartas;
-}
-
-void imprimir_mazo(int *mazo)
-{
-    printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
-    printf("Oro:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mazo[j]);
-    }
-    printf("\n");
-    printf("Copa:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mazo[10 + j]);
-    }
-    printf("\n");
-    printf("Espada:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mazo[20 + j]);
-    }
-    printf("\n");
-    printf("Basto:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mazo[30 + j]);
-    }
-    printf("\n");
-}
-
-void imprimir_mano(int mano[40])
-{
-    printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
-    printf("Oro:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mano[j]);
-    }
-    printf("\n");
-    printf("Copa:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mano[10 + j]);
-    }
-    printf("\n");
-    printf("Espada:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mano[20 + j]);
-    }
-    printf("\n");
-    printf("Basto:\t");
-    for (int j = 0; j < 10; j++)
-    {
-        printf("%d ", mano[30 + j]);
-    }
-    printf("\n");
 }
 
 void mano_a_string(int mano[40], char *string)
