@@ -243,7 +243,7 @@ int main()
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 sprintf(tx_buffer, "Es tu turno, %s\n", jugadores[player_number].nombre);
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                                sprintf(tx_buffer, "Levantás (L) o descartás (D)\n");
+                                sprintf(tx_buffer, "Levantás (L) o descartás (D): ");
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 recv(socket_con, rx_buffer, 1024, 0);
                                 while (rx_buffer[0] != 'L' && rx_buffer[0] != 'D')
@@ -258,7 +258,7 @@ int main()
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 mano_a_string(jugadores[player_number].mano, tx_buffer);
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                                sprintf(tx_buffer, "Las cartas sobre la mesa son:\nNinguna\n");
+                                sprintf(tx_buffer, "No quedan mas cartas sobre la mesa\n");
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 sprintf(tx_buffer, "Es tu turno, %s\n", jugadores[player_number].nombre);
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
@@ -283,13 +283,13 @@ int main()
                                     switch (contar_cartas(mano_temp))
                                     {
                                     case 1:
-                                        send(socket_con, "Tu carta (a)\n", 14, 0);
+                                        send(socket_con, "Tu carta (a): ", 15, 0);
                                         break;
                                     case 2:
-                                        send(socket_con, "Tu carta (a o b)\n", 18, 0);
+                                        send(socket_con, "Tu carta (a o b): ", 19, 0);
                                         break;
                                     default:
-                                        send(socket_con, "Tu carta (a, b o c)\n", 21, 0);
+                                        send(socket_con, "Tu carta (a, b o c): ", 22, 0);
                                         break;
                                     }
                                     recv(socket_con, rx_buffer, 1024, 0);
@@ -326,7 +326,7 @@ int main()
                                             strcat(tx_buffer, rx_buffer);
                                         }
                                         tx_buffer[strlen(tx_buffer) - 2] = '\0';
-                                        strcat(tx_buffer, ")\n");
+                                        strcat(tx_buffer, "): ");
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
                                         while (!((int)rx_buffer[0] >= 97 && (int)rx_buffer[0] <= (97 + cantidad_en_mesa - 1)))
@@ -364,7 +364,7 @@ int main()
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         restart = 1;
 
-                                        sprintf(tx_buffer, "Levantás (L) o descartás (D)\n");
+                                        sprintf(tx_buffer, "Levantás (L) o descartás (D): ");
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
                                         while (rx_buffer[0] != 'L' && rx_buffer[0] != 'D')
@@ -398,11 +398,11 @@ int main()
                                     rx_buffer[0] = 'a';
                                     break;
                                 case 2:
-                                    send(socket_con, "Tu carta (a o b)\n", 18, 0);
+                                    send(socket_con, "Tu carta (a o b): ", 19, 0);
                                     recv(socket_con, rx_buffer, 1024, 0);
                                     break;
                                 default:
-                                    send(socket_con, "Tu carta (a, b o c)\n", 21, 0);
+                                    send(socket_con, "Tu carta (a, b o c): ", 22, 0);
                                     recv(socket_con, rx_buffer, 1024, 0);
                                     break;
                                 }
@@ -476,6 +476,7 @@ int main()
             }
             sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+            printf("[*] El ganador es %s con %d escobas y %s cartas en el mazo\n", jugadores[ganador].nombre, jugadores[ganador].escobas, contar_cartas(jugadores[ganador].mazo));
 
             close(socket_con);
             exit(0);
