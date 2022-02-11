@@ -27,6 +27,8 @@
 #define SHM_KEY2 0x5678
 #define SHM_KEY3 0x5679
 #define SHM_KEY4 0x1235
+#define SHM_KEY5 0x1236
+#define SHM_KEY6 0x1237
 #define PORT 1234
 
 union semun
@@ -81,6 +83,14 @@ int main()
     int shmid4 = shmget(shmkey4, sizeof(int), 0666 | IPC_CREAT);
     int *fin = shmat(shmid4, NULL, 0);
 
+    key_t shmkey5 = ftok("/bin/ls", SHM_KEY5);
+    int shmid5 = shmget(shmkey5, 40 * sizeof(int), 0666 | IPC_CREAT);
+    int *mazo_temp = shmat(shmid5, NULL, 0);
+
+    key_t shmkey6 = ftok("/bin/ls", SHM_KEY6);
+    int shmid6 = shmget(shmkey6, sizeof(int), 0666 | IPC_CREAT);
+    int *carta_jugada = shmat(shmid6, NULL, 0);
+
     key_t semkey = ftok("/bin/ls", SEM_KEY);
     union semun arg;
     struct sembuf operacion;
@@ -119,11 +129,17 @@ int main()
         mazo[i] = 1;
         mesa[i] = 0;
     }
+    for (int i = 11; i < 40; i++)
+    {
+        mazo[i] = 0;
+    }
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
-    imprimir_mazo(mesa);
+    printf("[*] Mesa:\n");
+    mano_a_string(mesa, tx_buffer);
+    printf("%s", tx_buffer);
     player_number = 0;
     while (1)
     {
@@ -207,7 +223,7 @@ int main()
             int k = 'a';
             int suma = 0;
             int cartas_en_mazo_restantes;
-            int mano_temp[40], mesa_temp[40], mazo_temp[40];
+            int mano_temp[40], mesa_temp[40];
 
             while (*fin == 0)
             {
@@ -229,7 +245,10 @@ int main()
                             // ACA JUEGA EL JUGADOR DE TURNO
                             // La variable restart se utiliza para que el jugador pueda volver a jugar si arma una jugada no valida
                             int restart = 0;
-                            int carta_jugada;
+                            for (int i = 0; i < 40; i++)
+                            {
+                                mazo_temp[i] = 0;
+                            }
                             // Levantás (L) o descartás (D)
                             if (contar_cartas(mesa) != 0)
                             {
@@ -298,16 +317,16 @@ int main()
                                         send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
                                     }
-                                    carta_jugada = (int)rx_buffer[0] - k + 1;
+                                    *carta_jugada = (int)rx_buffer[0] - k + 1;
                                     for (int i = 0; i < 40; i++)
                                     {
                                         if (jugadores[player_number].mano[i] == 1)
                                         {
-                                            carta_jugada--;
-                                            if (carta_jugada == 0)
+                                            *carta_jugada = *carta_jugada - 1;
+                                            if (*carta_jugada == 0)
                                             {
-                                                carta_jugada = (i % 10) + 1;
-                                                suma += carta_jugada;
+                                                *carta_jugada = (i % 10) + 1;
+                                                suma += *carta_jugada;
                                                 mazo_temp[i] = 1;
                                                 mano_temp[i] = 0;
                                                 break;
@@ -334,16 +353,16 @@ int main()
                                             send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                             recv(socket_con, rx_buffer, 1024, 0);
                                         }
-                                        carta_jugada = (int)rx_buffer[0] - k + 1;
+                                        *carta_jugada = (int)rx_buffer[0] - k + 1;
                                         for (int i = 0; i < 40; i++)
                                         {
                                             if (mesa_temp[i] == 1)
                                             {
-                                                carta_jugada--;
-                                                if (carta_jugada == 0)
+                                                *carta_jugada = *carta_jugada - 1;
+                                                if (*carta_jugada == 0)
                                                 {
-                                                    carta_jugada = (i % 10) + 1;
-                                                    suma += carta_jugada;
+                                                    *carta_jugada = (i % 10) + 1;
+                                                    suma += *carta_jugada;
                                                     mazo_temp[i] = 1;
                                                     mesa_temp[i] = 0;
                                                     break;
@@ -380,7 +399,7 @@ int main()
                                         {
                                             jugadores[player_number].mano[i] = mano_temp[i];
                                             mesa[i] = mesa_temp[i];
-                                            jugadores[player_number].mazo[i] = mazo_temp[i];
+                                            jugadores[player_number].mazo[i] += mazo_temp[i];
                                         }
                                         sprintf(tx_buffer, "Armaste una escoba, llevas %d escobas en total\n", ++jugadores[player_number].escobas);
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
@@ -411,15 +430,15 @@ int main()
                                     send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                     recv(socket_con, rx_buffer, 1024, 0);
                                 }
-                                carta_jugada = (int)rx_buffer[0] - k + 1;
+                                *carta_jugada = (int)rx_buffer[0] - k + 1;
                                 for (int i = 0; i < 40; i++)
                                 {
                                     if (jugadores[player_number].mano[i] == 1)
                                     {
-                                        carta_jugada--;
-                                        if (carta_jugada == 0)
+                                        *carta_jugada = *carta_jugada - 1;
+                                        if (*carta_jugada == 0)
                                         {
-                                            carta_jugada == i;
+                                            *carta_jugada == i;
                                             jugadores[player_number].mano[i] = 0;
                                             mesa[i] = 1;
                                             break;
@@ -447,6 +466,25 @@ int main()
                             sprintf(tx_buffer, "Espero la jugada de %s\n", jugadores[turno].nombre);
                             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                             sem_wait(0);
+                            if (contar_cartas(mazo_temp) > 0)
+                            {
+                                sprintf(tx_buffer, "%s armó el siguiente juego:\n", jugadores[turno].nombre);
+                                send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                                mano_a_string(mazo_temp, tx_buffer);
+                                send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                            }
+                            else
+                            {
+                                sprintf(tx_buffer, "%s descartó la siguiente carta:\n", jugadores[turno].nombre);
+                                send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                                for (int i = 0; i < 40; i++)
+                                {
+                                    mazo_temp[i] = 0;
+                                }
+                                mazo_temp[*carta_jugada] = 1;
+                                mano_a_string(mazo_temp, tx_buffer);
+                                send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                            }
                         }
                         turno++;
                     }
@@ -476,7 +514,10 @@ int main()
             }
             sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-            printf("[*] El ganador es %s con %d escobas y %s cartas en el mazo\n", jugadores[ganador].nombre, jugadores[ganador].escobas, contar_cartas(jugadores[ganador].mazo));
+            if (player_number == 0)
+            {
+                printf("[*] El ganador es %s con %d escobas y %d cartas en el mazo\n", jugadores[ganador].nombre, jugadores[ganador].escobas, contar_cartas(jugadores[ganador].mazo));
+            }
 
             close(socket_con);
             exit(0);
@@ -501,6 +542,8 @@ int main()
     shmctl(shmid2, IPC_RMID, NULL);
     shmctl(shmid3, IPC_RMID, NULL);
     shmctl(shmid4, IPC_RMID, NULL);
+    shmctl(shmid5, IPC_RMID, NULL);
+    shmctl(shmid6, IPC_RMID, NULL);
     semctl(semid, 0, IPC_RMID, arg);
 
     return 0;
