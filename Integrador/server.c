@@ -201,15 +201,19 @@ int main()
             int vuelta = 0;
             int k = 'a';
             int suma = 0;
+            int cartas_en_mazo_restantes;
 
-            while (!fin)
+            while (fin == 0)
             {
                 sem_wait(1);
                 repartir3(mazo, jugadores[player_number].mano);
                 printf("[*] Mano del jugador %d:\n", player_number + 1);
                 mano_a_string(jugadores[player_number].mano, tx_buffer);
                 printf("%s", tx_buffer);
+                // imprimi cuantas cartas quedan en el mazo
+                printf("[*] Cartas en el mazo: %d\n", contar_cartas(mazo));
                 sem_post(1);
+
                 while (vuelta < 3)
                 {
                     while (turno < total_players)
@@ -244,7 +248,7 @@ int main()
                             }
                             else
                             {
-                                sprintf(tx_buffer, "\nTus cartas son:\n");
+                                sprintf(tx_buffer, "Tus cartas son:\n");
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 mano_a_string(jugadores[player_number].mano, tx_buffer);
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
@@ -416,6 +420,10 @@ int main()
                             {
                                 sem_post(0);
                             }
+                            if (vuelta == 2 && player_number == 0 && contar_cartas(jugadores[player_number].mano) == 0)
+                            {
+                                fin = 1;
+                            }
                         }
                         else
                         {
@@ -426,6 +434,7 @@ int main()
                             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                             sprintf(tx_buffer, "Espero la jugada de %s\n", jugadores[turno].nombre);
                             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                            cartas_en_mazo_restantes = contar_cartas(mazo);
                             sem_wait(0);
                         }
                         turno++;
@@ -435,11 +444,24 @@ int main()
                 }
                 vuelta = 0;
 
-                if (contar_cartas(mazo) < (player_number * 3))
+                if (cartas_en_mazo_restantes < (player_number * 3))
                 {
                     fin = 1;
                 }
             }
+            // verificar que jugador tiene mas escobas
+            int mayor = 0;
+            int ganador;
+            for (int i = 0; i < total_players; i++)
+            {
+                if (jugadores[i].escobas > mayor)
+                {
+                    mayor = jugadores[i].escobas;
+                    ganador = i;
+                }
+            }
+            sprintf(tx_buffer, "El ganador es %s con %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].escobas);
+            send(socket_con, tx_buffer, strlen(tx_buffer), 0);
 
             close(socket_con);
             exit(0);
