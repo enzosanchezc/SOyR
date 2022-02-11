@@ -495,6 +495,9 @@ int main()
 
     shmdt(jugadores);
     shmctl(shmid1, IPC_RMID, NULL);
+    shmctl(shmid2, IPC_RMID, NULL);
+    shmctl(shmid3, IPC_RMID, NULL);
+    shmctl(shmid4, IPC_RMID, NULL);
     semctl(semid, 0, IPC_RMID, arg);
 
     return 0;
