@@ -529,6 +529,14 @@ int main()
                 {
                     jugadores[player_number].mazo[i] += mesa[i];
                 }
+                for (int i = 0; i < total_players - 1; i++)
+                {
+                    sem_post(0);
+                }
+            }
+            else
+            {
+                sem_wait(0);
             }
 
             // Elección del ganador
@@ -628,29 +636,26 @@ int main()
                         sprintf(tx_buffer, "Bastos: ");
                         break;
                     }
-                    send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                     for (int k = 1; k < 8; k++)
                     {
                         if (jugadores[i].mazo[j + k - 1] == 1)
                         {
-                            sprintf(tx_buffer, "%d, ", k);
-                            send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                            sprintf(rx_buffer, "%d, ", k);
+                            strcat(tx_buffer, rx_buffer);
                         }
                     }
-                    for (int k = 8; k < 10; k++)
+                    for (int k = 8; k < 11; k++)
                     {
                         if (jugadores[i].mazo[j + k - 1] == 1)
                         {
-                            sprintf(tx_buffer, "%d, ", k + 2);
-                            send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                            sprintf(rx_buffer, "%d, ", k + 2);
+                            strcat(tx_buffer, rx_buffer);
                         }
                     }
-                    if (jugadores[i].mazo[j + 9] == 1)
-                    {
-                        sprintf(tx_buffer, "12");
-                        send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                    }
-                    send(socket_con, "\n", 1, 0);
+                    // remover los ultimos dos caracteres y agregar un salto de linea
+                    tx_buffer[strlen(tx_buffer) - 2] = '\0';
+                    strcat(tx_buffer, "\n");
+                    send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                 }
             }
 
