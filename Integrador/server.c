@@ -207,6 +207,7 @@ int main()
             int k = 'a';
             int suma = 0;
             int cartas_en_mazo_restantes;
+            int mano_temp[40], mesa_temp[40], mazo_temp[40];
 
             while (*fin == 0)
             {
@@ -272,7 +273,6 @@ int main()
                                 {
                                     // Carta sobre la mesa (a, b, c, d)
                                     suma = 0;
-                                    int mano_temp[40], mesa_temp[40], mazo_temp[40];
                                     for (int i = 0; i < 40; i++)
                                     {
                                         mano_temp[i] = jugadores[player_number].mano[i];
@@ -314,7 +314,7 @@ int main()
                                             }
                                         }
                                     }
-                                    while (suma < 15 && contar_cartas(mesa) > 0)
+                                    while (suma < 15 && contar_cartas(mesa_temp) > 0)
                                     {
                                         mano_a_string(mesa_temp, tx_buffer);
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
