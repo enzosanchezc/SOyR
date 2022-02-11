@@ -119,10 +119,6 @@ int main()
         mazo[i] = 1;
         mesa[i] = 0;
     }
-    for (int i = 11; i < 40; i++)
-    {
-        mazo[i] = 0;
-    }
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
