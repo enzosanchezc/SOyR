@@ -98,12 +98,14 @@ int main()
     struct sembuf operacion;
     operacion.sem_flg = 0;
 
-    int semid = semget(semkey, 2, IPC_CREAT | 0666);
+    int semid = semget(semkey, 3, IPC_CREAT | 0666);
 
     arg.val = 0;
     semctl(semid, 0, SETVAL, arg);
     arg.val = 1;
     semctl(semid, 1, SETVAL, arg);
+    arg.val = 0;
+    semctl(semid, 2, SETVAL, arg);
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -533,55 +535,190 @@ int main()
                 sem_wait(0);
             }
 
-            /*
             // Elección del ganador
             int ganador;
             int valido;
             // Las escobas valen un punto cada una.                 LISTO
             // Si un jugador tiene todos los oros suma 2 puntos.    LISTO
-            // Quien tenga la mayoria de los oros suma 1 punto.
+            // Quien tenga la mayoria de los oros suma 1 punto.     LISTO
             // Quien tenga el 7 de oro suma 1 punto.                LISTO
             // Si alguien tiene todos los 7 gana 2 puntos.          LISTO
-            // Por tener la mayoria de los 7 se suma 1 punto.
-            // Por tener la mayoria de las cartas se gana 1 punto.
+            // Por tener la mayoria de los 7 se suma 1 punto.       LISTO
+            // Por tener la mayoria de las cartas se gana 1 punto.  LISTO
 
-            // Primero se calcula el puntaje de cada jugador
+            // El jugador 0 es quien calcula los puntajes
 
-            // Escobas
-            jugadores[player_number].puntos = jugadores[player_number].escobas;
-
-            // Todos los oros
-            valido = 1;
-            for (int j = 0; j < 10; j++)
+            if (player_number == 0)
             {
-                if (jugadores[player_number].mazo[j] == 0)
+                // Escobas
+                for (int i = 0; i < total_players; i++)
                 {
-                    valido = 0;
+                    jugadores[i].puntos = jugadores[i].escobas;
+                    printf("\033[0;35m[*]\033[0m %s tiene %d escobas (%d puntos)\n", jugadores[i].nombre, jugadores[i].escobas, jugadores[i].escobas);
+                }
+
+                // Todos los oros
+                for (int i = 0; i < total_players; i++)
+                {
+                    valido = 1;
+                    for (int j = 0; j < 10; j++)
+                    {
+                        if (jugadores[i].mazo[j] == 0)
+                        {
+                            valido = 0;
+                        }
+                    }
+                    if (valido)
+                    {
+                        jugadores[i].puntos = jugadores[i].puntos + 2;
+                        printf("\033[0;35m[*]\033[0m %s tiene todos los oros (2 puntos)\n", jugadores[i].nombre);
+                        break;
+                    }
+                }
+
+                // Mayoria de oros
+                ganador = 0;
+                // Si valido es igual a 0, significa que nadie tiene todos los oros
+                if (valido == 0)
+                {
+                    for (int i = 0; i < total_players; i++)
+                    {
+                        // Utilizo valido como variable auxiliar para contar la cantidad maxima de oros que alguien tenga
+                        valido = 0;
+                        for (int j = 0; j < 10; j++)
+                        {
+                            if (jugadores[i].mazo[j] == 1)
+                            {
+                                valido++;
+                            }
+                        }
+                        // Si un jugador tiene mas oros que el anterior, se guarda el nuevo maximo en ganador
+                        if (valido > ganador)
+                        {
+                            ganador = valido;
+                        }
+                    }
+                    // Al finalizar, se le asigna 1 punto a cada jugador que tenga "ganador" oros
+                    for (int i = 0; i < total_players; i++)
+                    {
+                        valido = 0;
+                        for (int j = 0; j < 10; j++)
+                        {
+                            if (jugadores[i].mazo[j] == 1)
+                            {
+                                valido++;
+                            }
+                        }
+                        if (valido == ganador)
+                        {
+                            jugadores[i].puntos = jugadores[i].puntos + 1;
+                            printf("\033[0;35m[*]\033[0m %s tiene la mayor cantidad de oros (1 punto)\n", jugadores[i].nombre);
+                        }
+                    }
+                }
+
+                // 7 de oros
+                for (int i = 0; i < total_players; i++)
+                {
+                    if (jugadores[i].mazo[6] == 1)
+                    {
+                        jugadores[i].puntos = jugadores[i].puntos + 1;
+                        printf("\033[0;35m[*]\033[0m %s tiene el 7 de oro (1 punto)\n", jugadores[i].nombre);
+                        break;
+                    }
+                }
+
+                // Todos los 7s
+                for (int i = 0; i < total_players; i++)
+                {
+                    valido = 1;
+                    for (int j = 6; j < 40; j = j + 10)
+                    {
+                        if (jugadores[i].mazo[j] == 0)
+                        {
+                            valido = 0;
+                        }
+                    }
+                    if (valido)
+                    {
+                        jugadores[i].puntos = jugadores[i].puntos + 2;
+                        printf("\033[0;35m[*]\033[0m %s tiene todos los sietes (2 puntos)\n", jugadores[i].nombre);
+                        break;
+                    }
+                }
+
+                // Mayoria de sietes
+                ganador = 0;
+                if (valido == 0)
+                {
+                    for (int i = 0; i < total_players; i++)
+                    {
+                        // Utilizo valido como variable auxiliar para contar la cantidad maxima de sietes que alguien tenga
+                        valido = 0;
+                        for (int j = 6; j < 40; j = j + 10)
+                        {
+                            if (jugadores[i].mazo[j] == 1)
+                            {
+                                valido++;
+                            }
+                        }
+                        // Si un jugador tiene mas sietes que el anterior, se guarda el nuevo maximo en ganador
+                        if (valido > ganador)
+                        {
+                            ganador = valido;
+                        }
+                    }
+                    // Al finalizar, se le asigna 1 punto a cada jugador que tenga "ganador" sietes
+                    for (int i = 0; i < total_players; i++)
+                    {
+                        valido = 0;
+                        for (int j = 6; j < 40; j = j + 10)
+                        {
+                            if (jugadores[i].mazo[j] == 1)
+                            {
+                                valido++;
+                            }
+                        }
+                        if (valido == ganador)
+                        {
+                            jugadores[i].puntos = jugadores[i].puntos + 1;
+                            printf("\033[0;35m[*]\033[0m %s tiene la mayor cantidad de sietes (1 punto)\n", jugadores[i].nombre);
+                        }
+                    }
+                }
+
+                // Mayoria de cartas
+                ganador = 0;
+                for (int i = 0; i < total_players; i++)
+                {
+                    // Utilizo valido como variable auxiliar para contar la cantidad de cartas que alguien tenga
+                    valido = contar_cartas(jugadores[i].mazo);
+                    // Si un jugador tiene mas cartas que el anterior, se guarda el nuevo maximo en ganador
+                    if (valido > ganador)
+                    {
+                        ganador = valido;
+                    }
+                }
+                // Al finalizar, se le asigna 1 punto a cada jugador que tenga "ganador" cartas
+                for (int i = 0; i < total_players; i++)
+                {
+                    valido = contar_cartas(jugadores[i].mazo);
+                    if (valido == ganador)
+                    {
+                        jugadores[i].puntos = jugadores[i].puntos + 1;
+                        printf("\033[0;35m[*]\033[0m %s tiene la mayor cantidad de cartas (1 punto)\n", jugadores[i].nombre);
+                    }
+                }
+
+                for (int i = 0; i < total_players - 1; i++)
+                {
+                    sem_post(2);
                 }
             }
-            if (valido)
-            {
-                jugadores[player_number].puntos = jugadores[player_number].puntos + 2;
-            }
 
-            // 7 de oros
-            if (jugadores[player_number].mazo[6] == 1)
+            if (player_number != 0)
             {
-                jugadores[player_number].puntos = jugadores[player_number].puntos + 1;
-            }
-
-            // Todos los 7s
-            valido = 1;
-            for (int j = 6; j < 37; j = j + 10)
-            {
-                if (jugadores[player_number].mazo[j] == 0)
-                {
-                    valido = 0;
-                }
-            }
-            if (valido)
-            {
-                jugadores[player_number].puntos = jugadores[player_number].puntos + 2;
+                sem_wait(2);
             }
 
             ganador = 0;
@@ -654,12 +791,12 @@ int main()
                 }
             }
 
-            /*sprintf(tx_buffer, "El ganador es %s con %d puntos y %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].puntos, jugadores[ganador].escobas);
+            sprintf(tx_buffer, "El ganador es %s con %d puntos y %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].puntos, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
             if (player_number == 0)
             {
                 printf("[*] El ganador es %s con %d escobas y %d cartas en el mazo\n", jugadores[ganador].nombre, jugadores[ganador].escobas, contar_cartas(jugadores[ganador].mazo));
-            }*/
+            }
 
             close(socket_con);
             exit(0);
