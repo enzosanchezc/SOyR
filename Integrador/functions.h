@@ -127,8 +127,8 @@ int contar_cartas(int *mazo)
 
 void mano_a_string(int mano[40], char *string)
 {
-    char buffer[24];
-    char palo[7];
+    char buffer[64];
+    char palo[32];
     int carta;
     int k = 'a';
     strcpy(string, "Ninguna");
@@ -158,16 +158,18 @@ void mano_a_string(int mano[40], char *string)
             }
             if (k == 'a')
             {
-                sprintf(buffer, "(%c) %d de %s ", k, carta, palo);
+                sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
                 strcpy(string, buffer);
             }
             else
             {
-                sprintf(buffer, "(%c) %d de %s ", k, carta, palo);
+                sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
                 strcat(string, buffer);
             }
             k++;
         }
     }
+    // remover el espacio del final
+    string[strlen(string) - 1] = '\0';
     strcat(string, "\n");
 }

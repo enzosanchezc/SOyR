@@ -137,7 +137,7 @@ int main()
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
     repartir_mesa(mazo, mesa);
-    printf("[*] Mesa:\n");
+    printf("[*] Mesa: ");
     mano_a_string(mesa, tx_buffer);
     printf("%s", tx_buffer);
     player_number = 0;
@@ -506,7 +506,7 @@ int main()
                                 mazo_temp[*carta_jugada] = 1;
                                 mano_a_string(mazo_temp, tx_buffer);
                                 // Debo remover de tx_buffer el (a) del principio
-                                send(socket_con, tx_buffer + 4, strlen(tx_buffer) - 4, 0);
+                                send(socket_con, tx_buffer + 14, strlen(tx_buffer) - 14, 0);
                             }
                         }
                         turno++;
@@ -756,16 +756,16 @@ int main()
                     switch (j)
                     {
                     case 0:
-                        sprintf(tx_buffer, "Oros: ");
+                        sprintf(tx_buffer, "\t\033[0;33mOros:\033[0m  ");
                         break;
                     case 10:
-                        sprintf(tx_buffer, "Copas: ");
+                        sprintf(tx_buffer, "\t\033[0;31mCopas:\033[0m  ");
                         break;
                     case 20:
-                        sprintf(tx_buffer, "Espadas: ");
+                        sprintf(tx_buffer, "\t\033[0;36mEspadas:\033[0m  ");
                         break;
                     case 30:
-                        sprintf(tx_buffer, "Bastos: ");
+                        sprintf(tx_buffer, "\t\033[0;32mBastos:\033[0m  ");
                         break;
                     }
                     for (int k = 1; k < 8; k++)
