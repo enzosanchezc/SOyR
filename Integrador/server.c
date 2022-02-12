@@ -793,6 +793,16 @@ int main()
 
             sprintf(tx_buffer, "El ganador es %s con %d puntos y %d escobas!\n", jugadores[ganador].nombre, jugadores[ganador].puntos, jugadores[ganador].escobas);
             send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+
+            for (int i = 0; i < total_players; i++)
+            {
+                if (i != ganador)
+                {
+                    sprintf(tx_buffer, "%s hizo %d puntos.\n", jugadores[i].nombre, jugadores[i].puntos);
+                    send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                }
+            }
+
             if (player_number == 0)
             {
                 printf("[*] El ganador es %s con %d escobas y %d cartas en el mazo\n", jugadores[ganador].nombre, jugadores[ganador].escobas, contar_cartas(jugadores[ganador].mazo));
