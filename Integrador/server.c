@@ -230,7 +230,7 @@ int main()
             {
                 sem_wait(1);
                 repartir3(mazo, jugadores[player_number].mano);
-                printf("[*] Mano del jugador %d:\n", player_number + 1);
+                printf("[*] Mano del jugador %d: ", player_number + 1);
                 mano_a_string(jugadores[player_number].mano, tx_buffer);
                 printf("%s", tx_buffer);
                 // imprimi cuantas cartas quedan en el mazo
