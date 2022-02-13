@@ -756,16 +756,16 @@ int main()
                     switch (j)
                     {
                     case 0:
-                        sprintf(tx_buffer, "\t\033[0;33mOros:\033[0m  ");
+                        sprintf(tx_buffer, "\t\033[0;33mOros:\t\033[0m  ");
                         break;
                     case 10:
-                        sprintf(tx_buffer, "\t\033[0;31mCopas:\033[0m  ");
+                        sprintf(tx_buffer, "\t\033[0;31mCopas:\t\033[0m  ");
                         break;
                     case 20:
-                        sprintf(tx_buffer, "\t\033[0;36mEspadas:\033[0m  ");
+                        sprintf(tx_buffer, "\t\033[0;36mEspadas:\t\033[0m  ");
                         break;
                     case 30:
-                        sprintf(tx_buffer, "\t\033[0;32mBastos:\033[0m  ");
+                        sprintf(tx_buffer, "\t\033[0;32mBastos:\t\033[0m  ");
                         break;
                     }
                     for (int k = 1; k < 8; k++)
