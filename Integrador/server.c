@@ -706,8 +706,7 @@ int main()
                     sem_post(2);
                 }
             }
-
-            if (player_number != 0)
+            else
             {
                 sem_wait(2);
             }
