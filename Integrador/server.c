@@ -52,14 +52,6 @@ typedef struct jugador
     int ultimo_en_levantar;
 } jugador;
 
-void imprimir_mazo(int *mazo);
-void imprimir_mano(int mano[40]);
-int repartir(int *mazo_fuente, int mazo_destino[40]);
-int repartir3(int *mazo_fuente, int mazo_destino[40]);
-void repartir_mesa(int *mazo_fuente, int *mazo_destino);
-int contar_cartas(int *mazo);
-void mano_a_string(int mano[40], char *string);
-
 int main()
 {
     int server_fd, socket_con, PID[4];
