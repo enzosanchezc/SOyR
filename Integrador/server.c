@@ -330,9 +330,8 @@ int main()
                                     {
                                         mano_a_string(mesa_temp, tx_buffer);
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                                        int cantidad_en_mesa = contar_cartas(mesa_temp);
                                         sprintf(tx_buffer, "Carta sobre la mesa (a, ");
-                                        for (int i = 1; i < cantidad_en_mesa; i++)
+                                        for (int i = 1; i < contar_cartas(mesa_temp); i++)
                                         {
                                             sprintf(rx_buffer, "%c, ", 'a' + i);
                                             strcat(tx_buffer, rx_buffer);
@@ -341,7 +340,7 @@ int main()
                                         strcat(tx_buffer, "): ");
                                         send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                         recv(socket_con, rx_buffer, 1024, 0);
-                                        while (!((int)rx_buffer[0] >= 97 && (int)rx_buffer[0] <= (97 + cantidad_en_mesa - 1)))
+                                        while (!((int)rx_buffer[0] >= 'a' && (int)rx_buffer[0] <= 'a' + contar_cartas(mesa_temp) - 1))
                                         {
                                             send(socket_con, "Ingrese una opción válida: ", 29, 0);
                                             recv(socket_con, rx_buffer, 1024, 0);
