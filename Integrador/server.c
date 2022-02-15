@@ -401,7 +401,7 @@ int main()
 
                                         for (int i = 0; i < total_players; i++)
                                         {
-                                            jugadores[player_number].ultimo_en_levantar = 0;
+                                            jugadores[i].ultimo_en_levantar = 0;
                                         }
                                         jugadores[player_number].ultimo_en_levantar = 1;
 
@@ -474,7 +474,7 @@ int main()
                             sem_wait(0);
                             if (contar_cartas(mazo_temp) > 0)
                             {
-                                if (contar_cartas(mesa) > 0)
+                                if (contar_cartas(mesa) > 0 || *fin == 1)
                                 {
                                     sprintf(tx_buffer, "%s armó el siguiente juego:\n", jugadores[turno].nombre);
                                 }
@@ -511,6 +511,9 @@ int main()
             // Las cartas sobrantes se las lleva el último jugador que levantó
             if (jugadores[player_number].ultimo_en_levantar == 1)
             {
+                printf("[*] %s se lleva las cartas sobrantes\n", jugadores[player_number].nombre);
+                sprintf(tx_buffer, "Te llevaste las cartas sobrantes\n");
+                send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                 for (int i = 0; i < 40; i++)
                 {
                     jugadores[player_number].mazo[i] += mesa[i];
@@ -523,6 +526,15 @@ int main()
             }
             else
             {
+                for (int i = 0; i < player_number; i++)
+                {
+                    if (jugadores[i].ultimo_en_levantar == 1)
+                    {
+                        sprintf(tx_buffer, "%s se llevó las cartas sobrantes\n", jugadores[i].nombre);
+                        send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                        break;
+                    }
+                }
                 sem_wait(0);
             }
 
