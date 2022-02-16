@@ -3,8 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-int contar_cartas(int *mazo);
-
+// Funcion auxiliar. Imprime las cartas de un determinado mazo en formato de '0' y '1' de forma matricial
 void imprimir_mazo(int *mazo)
 {
     printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
@@ -34,6 +33,7 @@ void imprimir_mazo(int *mazo)
     printf("\n");
 }
 
+// Funcion auxiliar. Imprime una mano en formato de '0' y '1' de forma matricial
 void imprimir_mano(int mano[40])
 {
     printf("\033[0;32m\t1 2 3 4 5 6 7 S C R\033[0m\n");
@@ -63,6 +63,7 @@ void imprimir_mano(int mano[40])
     printf("\n");
 }
 
+// Toma una carta aleatoria del mazo fuente y la pasa al mazo destino
 int repartir(int *mazo_fuente, int mazo_destino[40])
 {
     if (contar_cartas(mazo_fuente) < 1)
@@ -84,6 +85,7 @@ int repartir(int *mazo_fuente, int mazo_destino[40])
     return 0;
 }
 
+// Repite 3 veces la funcion 'repartir'
 int repartir3(int *mazo_fuente, int mazo_destino[40])
 {
     if (contar_cartas(mazo_fuente) < 3)
@@ -98,6 +100,7 @@ int repartir3(int *mazo_fuente, int mazo_destino[40])
     return 0;
 }
 
+// Misma funcion que 'repartir' pero es especifica para el mazo actual de la mesa
 void repartir_mesa(int *mazo_fuente, int *mazo_destino)
 {
     srand(time(0));
@@ -112,6 +115,7 @@ void repartir_mesa(int *mazo_fuente, int *mazo_destino)
     mazo_destino[palo * 10 + carta] = 1;
 }
 
+// Contar cartas de un determinado mazo (Usuario o mesa)
 int contar_cartas(int *mazo)
 {
     int cartas = 0;
@@ -125,6 +129,7 @@ int contar_cartas(int *mazo)
     return cartas;
 }
 
+// Toma un determinado mazo y crea una cadena de texto con las cartas que contiene
 void mano_a_string(int mano[40], char *string)
 {
     char buffer[64];
