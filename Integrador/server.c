@@ -179,6 +179,11 @@ int main()
             close(server_fd);
             send(socket_con, "Decime tu nombre: ", 18, 0);
             recv(socket_con, rx_buffer, 1024, 0);
+            while (rx_buffer[0] == '\n')
+            {
+                send(socket_con, "Ingrese un nombre válido: ", 29, 0);
+                recv(socket_con, rx_buffer, 1024, 0);
+            }
             rx_buffer[strlen(rx_buffer) - 1] = '\0';
             strcpy(jugadores[player_number].nombre, rx_buffer);
             printf("[*] El jugador número %d eligió el nombre %s\n", player_number + 1, jugadores[player_number].nombre);
