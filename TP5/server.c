@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
 
         time(&rawtime);
         strcpy(starttime, asctime(localtime(&rawtime)));
-        
+
         int bytesrecv = 0;
         int bytessent = 0;
 
@@ -81,14 +81,13 @@ int main(int argc, char const *argv[])
 
             fd = fopen(filename, "wb");
             int filesize = 0;
-            while (filesize < expectedfilesize)
+            int n;
+            do
             {
-                int n = recv(socket_con, buffer, 1024, 0);
+                n = recv(socket_con, buffer, 1024, 0);
                 fwrite(buffer, sizeof(char), n, fd);
                 filesize += n;
-                if (n < 1024)
-                    break;
-            }
+            } while (n == 1024);
             fclose(fd);
 
             memset(buffer, 0, 1024);
@@ -105,12 +104,12 @@ int main(int argc, char const *argv[])
             log_fd = fopen("log.csv", "a");
             fprintf(log_fd, "%s:%d,%d,%d,%d,%s,%s\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port), filesize, bytessent, bytesrecv + filesize, starttime, endtime);
             fclose(log_fd);
-            
+
             close(socket_con);
             break;
         }
     }
-    
+
     // verificar que no queden procesos zombie
     for (int i = 0; i < child_count; i++)
     {
