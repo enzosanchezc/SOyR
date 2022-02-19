@@ -106,7 +106,7 @@ int main(int argc, char const *argv[])
             fclose(log_fd);
 
             close(socket_con);
-            break;
+            return 0;
         }
     }
 
