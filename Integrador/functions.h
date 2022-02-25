@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 
+int contar_cartas(int *mazo);
 // Funcion auxiliar. Imprime las cartas de un determinado mazo en formato de '0' y '1' de forma matricial
 void imprimir_mazo(int *mazo)
 {
