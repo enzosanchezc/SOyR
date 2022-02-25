@@ -41,6 +41,7 @@ union semun
     struct seminfo *__buf;
 };
 
+// Estructura de un jugador
 typedef struct jugador
 {
     int id;
@@ -120,18 +121,21 @@ int main()
 
     listen(server_fd, 4);
 
+    // Inicialización del mazo principal
     for (int i = 0; i < 40; i++)
     {
         mazo[i] = 1;
         mesa[i] = 0;
     }
-    repartir_mesa(mazo, mesa);
-    repartir_mesa(mazo, mesa);
-    repartir_mesa(mazo, mesa);
-    repartir_mesa(mazo, mesa);
+
+    // Repartir cartas
+    for (int i = 0; i < 4; i++)
+        repartir_mesa(mazo, mesa);
+
     printf("[*] Mesa: ");
     mano_a_string(mesa, tx_buffer);
     printf("%s", tx_buffer);
+
     player_number = 0;
     while (1)
     {
@@ -173,6 +177,7 @@ int main()
         }
         jugadores[player_number].ultimo_en_levantar = 0;
 
+        // Se crea un proceso hijo para cada jugador, el padre vuelve al principio del bucle si aun hay jugadores por conectar
         PID[player_number] = fork();
         if (PID[player_number] == 0)
         {
@@ -201,6 +206,7 @@ int main()
                 }
             }
 
+            // Creación de cadena de texto temporal con la lista de jugadores
             char *nombres_string = malloc(100);
             strcpy(nombres_string, jugadores[0].nombre);
             for (int i = 1; i < total_players - 1; i++)
@@ -242,6 +248,7 @@ int main()
                         {
                             // ACA JUEGA EL JUGADOR DE TURNO
                             // La variable restart se utiliza para que el jugador pueda volver a jugar si arma una jugada no valida
+                            // El mazo temporal es utilizado para levantar cartas temporales que puede que no sea la jugada final
                             int restart = 0;
                             for (int i = 0; i < 40; i++)
                             {
@@ -283,6 +290,8 @@ int main()
                                 send(socket_con, tx_buffer, strlen(tx_buffer), 0);
                                 strcpy(rx_buffer, "D");
                             }
+                            // La siguiente estructura do-while sirve para poder reiniciar la jugada en caso
+                            // de que se realice alguna jugada ilegal (levantar mas de 15)
                             do
                             {
                                 restart = 0;
@@ -318,18 +327,16 @@ int main()
                                     *carta_jugada = (int)rx_buffer[0] - 'a' + 1;
                                     for (int i = 0; i < 40; i++)
                                     {
-                                        if (jugadores[player_number].mano[i] == 1)
-                                        {
-                                            *carta_jugada = *carta_jugada - 1;
-                                            if (*carta_jugada == 0)
-                                            {
-                                                *carta_jugada = (i % 10) + 1;
-                                                suma += *carta_jugada;
-                                                mazo_temp[i] = 1;
-                                                mano_temp[i] = 0;
-                                                break;
-                                            }
-                                        }
+                                        if (jugadores[player_number].mano[i] != 1)
+                                            continue;
+                                        *carta_jugada = *carta_jugada - 1;
+                                        if (*carta_jugada != 0)
+                                            continue;
+                                        *carta_jugada = (i % 10) + 1;
+                                        suma += *carta_jugada;
+                                        mazo_temp[i] = 1;
+                                        mano_temp[i] = 0;
+                                        break;
                                     }
                                     while (suma < 15 && contar_cartas(mesa_temp) > 0)
                                     {
@@ -353,18 +360,16 @@ int main()
                                         *carta_jugada = (int)rx_buffer[0] - 'a' + 1;
                                         for (int i = 0; i < 40; i++)
                                         {
-                                            if (mesa_temp[i] == 1)
-                                            {
-                                                *carta_jugada = *carta_jugada - 1;
-                                                if (*carta_jugada == 0)
-                                                {
-                                                    *carta_jugada = (i % 10) + 1;
-                                                    suma += *carta_jugada;
-                                                    mazo_temp[i] = 1;
-                                                    mesa_temp[i] = 0;
-                                                    break;
-                                                }
-                                            }
+                                            if (mesa_temp[i] != 1)
+                                                continue;
+                                            *carta_jugada = *carta_jugada - 1;
+                                            if (*carta_jugada != 0)
+                                                continue;
+                                            *carta_jugada = (i % 10) + 1;
+                                            suma += *carta_jugada;
+                                            mazo_temp[i] = 1;
+                                            mesa_temp[i] = 0;
+                                            break;
                                         }
                                     }
                                     if (suma != 15)
@@ -444,28 +449,23 @@ int main()
                                 *carta_jugada = (int)rx_buffer[0] - 'a' + 1;
                                 for (int i = 0; i < 40; i++)
                                 {
-                                    if (jugadores[player_number].mano[i] == 1)
-                                    {
-                                        *carta_jugada = *carta_jugada - 1;
-                                        if (*carta_jugada == 0)
-                                        {
-                                            *carta_jugada = i;
-                                            jugadores[player_number].mano[i] = 0;
-                                            mesa[i] = 1;
-                                            break;
-                                        }
-                                    }
+                                    if (jugadores[player_number].mano[i] != 1)
+                                        continue;
+                                    *carta_jugada = *carta_jugada - 1;
+                                    if (*carta_jugada != 0)
+                                        continue;
+                                    *carta_jugada = i;
+                                    jugadores[player_number].mano[i] = 0;
+                                    mesa[i] = 1;
+                                    break;
                                 }
                             }
 
                             if (vuelta == 2 && player_number == 0 && contar_cartas(mazo) < total_players * 3)
-                            {
                                 *fin = 1;
-                            }
+
                             for (int i = 0; i < total_players - 1; i++)
-                            {
                                 sem_post(0);
-                            }
                         }
                         else
                         {
@@ -533,12 +533,11 @@ int main()
             {
                 for (int i = 0; i < player_number; i++)
                 {
-                    if (jugadores[i].ultimo_en_levantar == 1)
-                    {
-                        sprintf(tx_buffer, "%s se llevó las cartas sobrantes\n", jugadores[i].nombre);
-                        send(socket_con, tx_buffer, strlen(tx_buffer), 0);
-                        break;
-                    }
+                    if (jugadores[i].ultimo_en_levantar != 1)
+                        continue;
+                    sprintf(tx_buffer, "%s se llevó las cartas sobrantes\n", jugadores[i].nombre);
+                    send(socket_con, tx_buffer, strlen(tx_buffer), 0);
+                    break;
                 }
                 sem_wait(0);
             }
@@ -572,9 +571,7 @@ int main()
                     for (int j = 0; j < 10; j++)
                     {
                         if (jugadores[i].mazo[j] == 0)
-                        {
                             valido = 0;
-                        }
                     }
                     if (valido)
                     {
@@ -628,12 +625,11 @@ int main()
                 // 7 de oros
                 for (int i = 0; i < total_players; i++)
                 {
-                    if (jugadores[i].mazo[6] == 1)
-                    {
-                        jugadores[i].puntos = jugadores[i].puntos + 1;
-                        printf("\033[0;35m[*]\033[0m %s tiene el 7 de oro (1 punto)\n", jugadores[i].nombre);
-                        break;
-                    }
+                    if (jugadores[i].mazo[6] != 1)
+                        continue;
+                    jugadores[i].puntos = jugadores[i].puntos + 1;
+                    printf("\033[0;35m[*]\033[0m %s tiene el 7 de oro (1 punto)\n", jugadores[i].nombre);
+                    break;
                 }
 
                 // Todos los 7s

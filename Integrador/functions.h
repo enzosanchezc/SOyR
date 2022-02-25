@@ -139,40 +139,39 @@ void mano_a_string(int mano[40], char *string)
     strcpy(string, "Ninguna ");
     for (int i = 0; i < 40; i++)
     {
-        if (mano[i] == 1)
+        if (mano[i] != 1)
+            continue;
+        switch (i / 10)
         {
-            switch (i / 10)
-            {
-            case 0:
-                strcpy(palo, "Oro");
-                break;
-            case 1:
-                strcpy(palo, "Copa");
-                break;
-            case 2:
-                strcpy(palo, "Espada");
-                break;
-            case 3:
-                strcpy(palo, "Basto");
-                break;
-            }
-            carta = (i % 10) + 1;
-            if (carta == 8 || carta == 9 || carta == 10)
-            {
-                carta = carta + 2;
-            }
-            if (k == 'a')
-            {
-                sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
-                strcpy(string, buffer);
-            }
-            else
-            {
-                sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
-                strcat(string, buffer);
-            }
-            k++;
+        case 0:
+            strcpy(palo, "Oro");
+            break;
+        case 1:
+            strcpy(palo, "Copa");
+            break;
+        case 2:
+            strcpy(palo, "Espada");
+            break;
+        case 3:
+            strcpy(palo, "Basto");
+            break;
         }
+        carta = (i % 10) + 1;
+        if (carta == 8 || carta == 9 || carta == 10)
+        {
+            carta = carta + 2;
+        }
+        if (k == 'a')
+        {
+            sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
+            strcpy(string, buffer);
+        }
+        else
+        {
+            sprintf(buffer, "\033[0;2m(%c)\033[0m %d de %s ", k, carta, palo);
+            strcat(string, buffer);
+        }
+        k++;
     }
     // remover el espacio del final
     string[strlen(string) - 1] = '\0';
