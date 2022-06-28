@@ -3,6 +3,20 @@
 #include <string.h>
 #include <time.h>
 
+// Contar cartas de un determinado mazo (Usuario o mesa)
+int contar_cartas(int *mazo)
+{
+    int cartas = 0;
+    for (int i = 0; i < 40; i++)
+    {
+        if (mazo[i] == 1)
+        {
+            cartas++;
+        }
+    }
+    return cartas;
+}
+
 // Funcion auxiliar. Imprime las cartas de un determinado mazo en formato de '0' y '1' de forma matricial
 void imprimir_mazo(int *mazo)
 {
@@ -113,20 +127,6 @@ void repartir_mesa(int *mazo_fuente, int *mazo_destino)
     }
     mazo_fuente[palo * 10 + carta] = 0;
     mazo_destino[palo * 10 + carta] = 1;
-}
-
-// Contar cartas de un determinado mazo (Usuario o mesa)
-int contar_cartas(int *mazo)
-{
-    int cartas = 0;
-    for (int i = 0; i < 40; i++)
-    {
-        if (mazo[i] == 1)
-        {
-            cartas++;
-        }
-    }
-    return cartas;
 }
 
 // Toma un determinado mazo y crea una cadena de texto con las cartas que contiene
