@@ -8,4 +8,5 @@ RUN gcc -o server server.c
 FROM alpine
 COPY --from=build-env /app/server /app/server
 WORKDIR /app
+EXPOSE 1234
 CMD ["/app/server"]
